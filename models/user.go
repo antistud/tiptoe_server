@@ -1,6 +1,8 @@
 package models
 
 import (
+	"context"
+
 	"github.com/antistud/tiptoe_server/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,7 +17,7 @@ type User struct {
 func FindOneUser(user *User, id string) error {
 
 	database := db.Client.Database("tiptoe").Collection("user")
-	err := database.FindOne(db.Ctx,
+	err := database.FindOne(context.TODO(),
 		bson.D{{"username", id}},
 		options.FindOne().SetProjection(bson.M{"_id": 0, "password": 0})).Decode(user)
 	if err != nil {

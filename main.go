@@ -15,12 +15,13 @@ func main() {
 		fmt.Println("status: ", err)
 	}
 
-	if err := db.DbInit(); err != nil {
+	ctx, cancel, err := db.DbInit()
+	if err != nil {
 		panic("Could not connect to database")
 	}
 
-	defer db.Client.Disconnect(db.Ctx)
-	defer db.CtxCancel()
+	defer db.Client.Disconnect(ctx)
+	defer cancel()
 	/*
 	   List databases
 	*/

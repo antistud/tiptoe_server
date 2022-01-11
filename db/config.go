@@ -10,10 +10,8 @@ import (
 )
 
 var Client *mongo.Client
-var Ctx context.Context
-var CtxCancel context.CancelFunc
 
-func DbInit() error {
+func DbInit() (context.Context, context.CancelFunc, error) {
 
 	/*
 	   Connect to my cluster
@@ -21,13 +19,13 @@ func DbInit() error {
 	var err error
 	Client, err = mongo.NewClient(options.Client().ApplyURI(os.Getenv("TIPTOE_DB_URI")))
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	Ctx, CtxCancel = context.WithTimeout(context.Background(), 10*time.Second)
-	err = Client.Connect(Ctx)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	err = Client.Connect(ctx)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	return nil
+	return ctx, cancel, nil
 
 }
