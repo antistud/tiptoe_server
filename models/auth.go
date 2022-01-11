@@ -12,13 +12,9 @@ type AuthUser struct {
 }
 
 func CreateUser(user *User) error {
-	client, cancel, ctx := db.DbInit()
 
-	defer client.Disconnect(ctx)
-	defer cancel()
-
-	database := client.Database("tiptoe").Collection("user")
-	res, err := database.InsertOne(ctx, user)
+	database := db.Client.Database("tiptoe").Collection("user")
+	res, err := database.InsertOne(db.Ctx, user)
 	if err != nil {
 		return err
 	}

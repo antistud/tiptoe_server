@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"log"
 	"os"
 	"time"
 
@@ -10,24 +9,25 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var DB *mongo.Client
+var Client *mongo.Client
 var Ctx context.Context
 var CtxCancel context.CancelFunc
 
-func DbInit() (*mongo.Client, context.CancelFunc, context.Context) {
+func DbInit() error {
 
 	/*
 	   Connect to my cluster
 	*/
-	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("TIPTOE_DB_URI")))
+	var err error
+	Client, err = mongo.NewClient(options.Client().ApplyURI(os.Getenv("TIPTOE_DB_URI")))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
+	Ctx, CtxCancel = context.WithTimeout(context.Background(), 10*time.Second)
+	err = Client.Connect(Ctx)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	return client, cancel, ctx
+	return nil
 
 }

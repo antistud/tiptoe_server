@@ -13,13 +13,9 @@ type User struct {
 }
 
 func FindOneUser(user *User, id string) error {
-	client, cancel, ctx := db.DbInit()
 
-	defer client.Disconnect(ctx)
-	defer cancel()
-
-	database := client.Database("tiptoe").Collection("user")
-	err := database.FindOne(ctx,
+	database := db.Client.Database("tiptoe").Collection("user")
+	err := database.FindOne(db.Ctx,
 		bson.D{{"username", id}},
 		options.FindOne().SetProjection(bson.M{"_id": 0, "password": 0})).Decode(user)
 	if err != nil {
