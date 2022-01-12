@@ -11,19 +11,28 @@ import (
 
 func GetUser(c *gin.Context) {
 	var user models.User
-	id := c.Query("username")
-	if id == "" {
+	username := c.Query("username")
+	id := c.Query("id")
+	if id == "" && username == "" {
 		fmt.Println("Incorrect url params")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid query params"})
 		return
 	}
-	fmt.Println("username param")
-	fmt.Println(id)
-	err := models.FindOneUser(&user, id)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusNotFound, errors.New("can't find user"))
-		return
+	if id == "" && username != "" {
+		err := models.FindUserByUsername(&user, username, true)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusNotFound, errors.New("can't find user"))
+			return
+		}
+	}
+	if id != "" && username == "" {
+		err := models.FindUserById(&user, id)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusNotFound, errors.New("can't find user"))
+			return
+		}
 	}
 	c.JSON(http.StatusOK, user)
 }

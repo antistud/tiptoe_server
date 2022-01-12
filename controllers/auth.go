@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/antistud/tiptoe_server/models"
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ func Login(c *gin.Context) {
 	var user models.User
 	var dbUser models.User
 	c.BindJSON(&user)
-	err := models.FindOneUser(&dbUser, user.Username)
+	err := models.FindUserByUsername(&dbUser, user.Username, false)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusOK, gin.H{"error": "invalid username or password"})
@@ -25,7 +26,33 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"error": "invalid username or password"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "authentication successful"})
+	tkn, err := models.CreateSession(user.Username)
+	if err != nil {
+		fmt.Println("Error creating session")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "authentication successful", "token": tkn})
+}
+
+func Logout(c *gin.Context) {
+	var user models.User
+	var dbUser models.User
+	c.BindJSON(&user)
+	err := models.FindUserByUsername(&dbUser, user.Username, true)
+	if err != nil {
+		fmt.Println("unable to find user")
+		println(err.Error())
+		c.JSON(404, gin.H{"error": "Unable to find user"})
+		return
+	}
+	err = models.InvalidateSessions(dbUser.ID)
+	if err != nil {
+		fmt.Println("unable to invalidate sessions for the user")
+		println(err.Error())
+		c.JSON(404, gin.H{"error": "Unable to logout"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
 func CreateUser(c *gin.Context) {
@@ -43,13 +70,14 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 	user.Password = hashedPass
-	err = models.CreateUser(&user)
+	user.Created = time.Now().Unix()
+	id, err := models.CreateUser(&user)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Error Creating User"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "User Successfully Created"})
+	c.JSON(http.StatusOK, gin.H{"status": "OK", "userId": id})
 
 }
 
