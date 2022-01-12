@@ -45,7 +45,7 @@ func Logout(c *gin.Context) {
 		c.JSON(404, gin.H{"error": "Unable to find user"})
 		return
 	}
-	err = models.InvalidateSessions(dbUser.ID)
+	err = models.InvalidateUserSessions(dbUser.ID.Hex())
 	if err != nil {
 		fmt.Println("unable to invalidate sessions for the user")
 		println(err.Error())

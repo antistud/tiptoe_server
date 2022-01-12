@@ -49,14 +49,12 @@ func CreateSession(username string) (string, error) {
 	return session.Token, nil
 }
 
-func InvalidateSessions(userid primitive.ObjectID) error {
+func InvalidateUserSessions(userid string) error {
 	// Invalidate all sessions for provided userid
 	database := db.Client.Database("tiptoe").Collection("session")
-	println(userid.Hex())
-	res, err := database.UpdateMany(context.TODO(), bson.M{"userid": userid.Hex()}, bson.D{{"$set", bson.D{{"isactive", false}}}})
+	_, err := database.UpdateMany(context.TODO(), bson.D{{"userId", userid}, {"isActive", true}}, bson.D{{"$set", bson.D{{"isActive", false}}}})
 	if err != nil {
 		return err
 	}
-	println(res.MatchedCount)
 	return nil
 }
