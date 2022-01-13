@@ -35,14 +35,25 @@ func Login(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	var user models.User
+	var rq models.LogoutRequest
 	var dbUser models.User
-	c.BindJSON(&user)
-	err := models.FindUserByUsername(&dbUser, user.Username, true)
+	err := c.BindJSON(&rq)
+	if err != nil {
+		fmt.Println("invalid requeset params")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing fields"})
+		return
+	}
+	err = models.FindUserByUsername(&dbUser, rq.Username, true)
 	if err != nil {
 		fmt.Println("unable to find user")
 		println(err.Error())
-		c.JSON(404, gin.H{"error": "Unable to find user"})
+		c.JSON(404, gin.H{"error": "Invalid user"})
+		return
+	}
+	err = models.IsUserSessionValid(rq.Token, dbUser.ID.Hex())
+	if err != nil {
+		fmt.Println(err.Error())
+		c.JSON(404, gin.H{"error": "Unable to logout"})
 		return
 	}
 	err = models.InvalidateUserSessions(dbUser.ID.Hex())

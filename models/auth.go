@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/antistud/tiptoe_server/db"
@@ -11,11 +12,15 @@ import (
 )
 
 type Session struct {
-	UserId   string `bson:"userId" json:"userId"`
-	IsActive bool   `bson:"isActive" json:"isActive"`
-	Created  int64  `bson:"created" json:"created"`
-	Token    string `bson:"token" json:"token"`
-	Expires  int64  `bson:"expires" json:"expires"`
+	UserId  string `bson:"userId" json:"userId"`
+	Created int64  `bson:"created" json:"created"`
+	Token   string `bson:"token" json:"token"`
+	Expires int64  `bson:"expires" json:"expires"`
+}
+
+type LogoutRequest struct {
+	Username string `json:"username"`
+	Token    string `json:"token"`
 }
 
 func CreateUser(user *User) (string, error) {
@@ -40,7 +45,6 @@ func CreateSession(username string) (string, error) {
 	session.UserId = user.ID.Hex()
 	session.Created = time.Now().Unix()
 	session.Expires = session.Created + 1800
-	session.IsActive = true
 	database := db.Client.Database("tiptoe").Collection("session")
 	_, err = database.InsertOne(context.TODO(), session)
 	if err != nil {
@@ -52,9 +56,22 @@ func CreateSession(username string) (string, error) {
 func InvalidateUserSessions(userid string) error {
 	// Invalidate all sessions for provided userid
 	database := db.Client.Database("tiptoe").Collection("session")
-	_, err := database.UpdateMany(context.TODO(), bson.D{{"userId", userid}, {"isActive", true}}, bson.D{{"$set", bson.D{{"isActive", false}}}})
+	_, err := database.UpdateMany(context.TODO(), bson.D{{"userId", userid}}, bson.D{{"$set", bson.D{{"expires", 0}}}})
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func IsUserSessionValid(token string, userid string) error {
+	database := db.Client.Database("tiptoe").Collection("session")
+	var res Session
+	err := database.FindOne(context.TODO(), bson.D{{"token", token}, {"userId", userid}}).Decode(&res)
+	if err != nil {
+		return err
+	}
+	if time.Now().Unix() > res.Expires {
+		return errors.New("Token Inactive")
 	}
 	return nil
 }
