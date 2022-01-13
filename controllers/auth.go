@@ -45,22 +45,17 @@ func Logout(c *gin.Context) {
 	}
 	err = models.FindUserByUsername(&dbUser, rq.Username, true)
 	if err != nil {
-		fmt.Println("unable to find user")
-		println(err.Error())
-		c.JSON(404, gin.H{"error": "Invalid user"})
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	err = models.IsUserSessionValid(rq.Token, dbUser.ID.Hex())
 	if err != nil {
-		fmt.Println(err.Error())
-		c.JSON(404, gin.H{"error": "Unable to logout"})
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	err = models.InvalidateUserSessions(dbUser.ID.Hex())
 	if err != nil {
-		fmt.Println("unable to invalidate sessions for the user")
-		println(err.Error())
-		c.JSON(404, gin.H{"error": "Unable to logout"})
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
@@ -70,22 +65,19 @@ func CreateUser(c *gin.Context) {
 	var user models.User
 
 	if err := c.BindJSON(&user); err != nil {
-		fmt.Print(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing fields"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "missing fields"})
 		return
 	}
 	hashedPass, err := hashPassword(user.Password)
 	if err != nil {
-		fmt.Println(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Error Creating User"})
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	user.Password = hashedPass
 	user.Created = time.Now().Unix()
 	id, err := models.CreateUser(&user)
 	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Error Creating User"})
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "OK", "userId": id})

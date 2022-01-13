@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -15,22 +14,20 @@ func GetUser(c *gin.Context) {
 	id := c.Query("id")
 	if id == "" && username == "" {
 		fmt.Println("Incorrect url params")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid query params"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid query params"})
 		return
 	}
 	if id == "" && username != "" {
 		err := models.FindUserByUsername(&user, username, true)
 		if err != nil {
-			fmt.Println(err)
-			c.JSON(http.StatusNotFound, errors.New("can't find user"))
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 	}
 	if id != "" && username == "" {
 		err := models.FindUserById(&user, id)
 		if err != nil {
-			fmt.Println(err)
-			c.JSON(http.StatusNotFound, errors.New("can't find user"))
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 	}
