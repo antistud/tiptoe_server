@@ -66,7 +66,13 @@ func InvalidateUserSessions(userid string) error {
 func IsUserSessionValid(token string, userid string) error {
 	database := db.Client.Database("tiptoe").Collection("session")
 	var res Session
-	err := database.FindOne(context.TODO(), bson.D{{"token", token}, {"userId", userid}}).Decode(&res)
+	var filter bson.D
+	if userid == "" {
+		filter = bson.D{{"token", token}}
+	} else {
+		filter = bson.D{{"token", token}, {"userId", userid}}
+	}
+	err := database.FindOne(context.TODO(), filter).Decode(&res)
 	if err != nil {
 		return err
 	}
@@ -74,4 +80,8 @@ func IsUserSessionValid(token string, userid string) error {
 		return errors.New("Token Inactive")
 	}
 	return nil
+}
+
+func IsSessionValid(token string) error {
+	return IsUserSessionValid(token, "")
 }
