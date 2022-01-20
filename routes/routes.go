@@ -21,5 +21,17 @@ func SetupRouter(r *gin.Engine) {
 			auth.POST("createUser", controllers.CreateUser)
 			auth.POST("logout", controllers.Logout)
 		}
+
+		connection := v1.Group("/connection/")
+		connection.Use(middleware.AuthRequired())
+		{
+			connection.POST("/create")
+		}
+
+		message := v1.Group("/message/")
+		message.Use(middleware.AuthRequired())
+		{
+			message.POST("/createGroup", controllers.CreateGroup)
+		}
 	}
 }

@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/antistud/tiptoe_server/models"
 	"github.com/gin-gonic/gin"
@@ -59,29 +58,6 @@ func Logout(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
-}
-
-func CreateUser(c *gin.Context) {
-	var user models.User
-
-	if err := c.BindJSON(&user); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "missing fields"})
-		return
-	}
-	hashedPass, err := hashPassword(user.Password)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	user.Password = hashedPass
-	user.Created = time.Now().Unix()
-	id, err := models.CreateUser(&user)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"status": "OK", "userId": id})
-
 }
 
 func hashPassword(password string) (string, error) {

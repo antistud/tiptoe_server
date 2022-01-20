@@ -82,6 +82,21 @@ func IsUserSessionValid(token string, userid string) error {
 	return nil
 }
 
-func IsSessionValid(token string) error {
-	return IsUserSessionValid(token, "")
+func IsSessionValid(token string) (string, error) {
+	err := IsUserSessionValid(token, "")
+	if err != nil {
+		return "", err
+	}
+	return "a", nil
+}
+
+func GetUserFromSession(token string) (string, error) {
+	database := db.Client.Database("tiptoe").Collection("session")
+	var user User
+	filter := bson.D{{"token", token}}
+	err := database.FindOne(context.TODO(), filter).Decode(&user)
+	if err != nil {
+		return "", err
+	}
+	return user.ID.Hex(), nil
 }

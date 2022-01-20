@@ -10,11 +10,12 @@ import (
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("token")
-		err := models.IsSessionValid(token)
+		userId, err := models.IsSessionValid(token)
 		if token == "" || err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}
+		c.Set("userId", userId)
 	}
 }
