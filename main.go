@@ -15,6 +15,7 @@ func main() {
 		fmt.Println("status: ", err)
 	}
 
+	// initialize db
 	ctx, cancel, err := db.DbInit()
 	if err != nil {
 		panic("Could not connect to database")
@@ -22,9 +23,6 @@ func main() {
 
 	defer db.Client.Disconnect(ctx)
 	defer cancel()
-	/*
-	   List databases
-	*/
 
 	r := gin.Default()
 	routes.SetupRouter(r)
