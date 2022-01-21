@@ -32,6 +32,7 @@ func SetupRouter(r *gin.Engine) {
 		message.Use(middleware.AuthRequired())
 		{
 			message.POST("/createGroup", controllers.CreateGroup)
+			message.POST("/create", middleware.CheckGroup(), controllers.CreateMessage)
 		}
 	}
 }

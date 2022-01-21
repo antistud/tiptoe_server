@@ -8,10 +8,10 @@ import (
 )
 
 type Group struct {
-	CreatedBy  string   `json:"createdBy"`
-	CreateDate int64    `json:"createDate"`
-	Usernames  []string `json:"usernames"`
-	IsActive   bool     `json:"isActive"`
+	CreatedBy  string   `bson:"createdBy" json:"createdBy"`
+	CreateDate int64    `bson:"createDate" json:"createDate"`
+	Usernames  []string `bson:"usernames" json:"usernames"`
+	IsActive   bool     `bson:"isActive" json:"isActive"`
 }
 
 type GroupCreateRq struct {

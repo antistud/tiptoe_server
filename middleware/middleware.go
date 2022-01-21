@@ -19,3 +19,9 @@ func AuthRequired() gin.HandlerFunc {
 		c.Set("userId", userId)
 	}
 }
+
+func CheckGroup() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// TODO: check to make sure requestor has permission to send message here
+	}
+}
