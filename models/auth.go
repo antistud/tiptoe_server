@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/antistud/tiptoe_server/db"
@@ -26,6 +28,8 @@ type LogoutRequest struct {
 func CreateUser(user *User) (string, error) {
 
 	database := db.Client.Database("tiptoe").Collection("user")
+	user.Username = strings.ToLower(user.Username)
+	fmt.Println(user.Username)
 	res, err := database.InsertOne(context.TODO(), user)
 	if err != nil {
 		return primitive.NilObjectID.Hex(), err

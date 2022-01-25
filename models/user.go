@@ -2,6 +2,8 @@ package models
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/antistud/tiptoe_server/db"
 	"github.com/antistud/tiptoe_server/util"
@@ -26,6 +28,26 @@ func FindUserByUsername(user *User, id string, omitPassword bool) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func BulkFindUserByUsername(users *[]User, usernames []string, omitPassword bool) error {
+	database := db.Client.Database("tiptoe").Collection("user")
+	var filter bson.A
+	for _, v := range usernames {
+		filter = append(filter, strings.ToLower(v))
+	}
+	fmt.Println(filter)
+	// { field: { $in: [<value1>, <value2>, ... <valueN> ] } }
+	// err := c.Find(bson.M{"friends": bson.M{"$in": arr}}).All(&users)
+	c, err := database.Find(
+		context.TODO(),
+		bson.M{"username": bson.M{"$in": filter}},
+		options.Find().SetProjection(bson.M{"password": util.Btoi(!omitPassword)}))
+	if err != nil {
+		return err
+	}
+	c.All(context.TODO(), users)
 	return nil
 }
 

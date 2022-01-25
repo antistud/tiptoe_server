@@ -10,12 +10,12 @@ import (
 type Group struct {
 	CreatedBy  string   `bson:"createdBy" json:"createdBy"`
 	CreateDate int64    `bson:"createDate" json:"createDate"`
-	Usernames  []string `bson:"usernames" json:"usernames"`
+	Users      []string `bson:"usernames" json:"usernames"`
 	IsActive   bool     `bson:"isActive" json:"isActive"`
 }
 
 type GroupCreateRq struct {
-	Usernames  []string `json:"usernames"`
+	Users      []string `json:"usernames"`
 	CreateDate uint64   `json:"createDate,omitempty"`
 }
 
