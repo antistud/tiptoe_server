@@ -21,7 +21,7 @@ func FindUserByUsername(user *User, id string, omitPassword bool) error {
 
 	database := db.Client.Database("tiptoe").Collection("user")
 	err := database.FindOne(context.TODO(),
-		bson.D{{"username", id}},
+		bson.D{{Key: "username", Value: id}},
 		options.FindOne().SetProjection(bson.M{"password": util.Btoi(!omitPassword)})).Decode(user)
 	if err != nil {
 		return err

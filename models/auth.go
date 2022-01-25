@@ -56,7 +56,7 @@ func CreateSession(username string) (string, error) {
 func InvalidateUserSessions(userid string) error {
 	// Invalidate all sessions for provided userid
 	database := db.Client.Database("tiptoe").Collection("session")
-	_, err := database.UpdateMany(context.TODO(), bson.D{{"userId", userid}}, bson.D{{"$set", bson.D{{"expires", 0}}}})
+	_, err := database.UpdateMany(context.TODO(), bson.D{{Key: "userId", Value: userid}}, bson.D{{Key: "$set", Value: bson.D{{Key: "expires", Value: 0}}}})
 	if err != nil {
 		return err
 	}
@@ -68,16 +68,16 @@ func IsUserSessionValid(token string, userid string) error {
 	var res Session
 	var filter bson.D
 	if userid == "" {
-		filter = bson.D{{"token", token}}
+		filter = bson.D{{Key: "token", Value: token}}
 	} else {
-		filter = bson.D{{"token", token}, {"userId", userid}}
+		filter = bson.D{{Key: "token", Value: token}, {Key: "userId", Value: userid}}
 	}
 	err := database.FindOne(context.TODO(), filter).Decode(&res)
 	if err != nil {
 		return err
 	}
 	if time.Now().Unix() > res.Expires {
-		return errors.New("Token Inactive")
+		return errors.New("token inactive")
 	}
 	return nil
 }
@@ -93,7 +93,7 @@ func IsSessionValid(token string) (string, error) {
 func GetUserFromSession(token string) (string, error) {
 	database := db.Client.Database("tiptoe").Collection("session")
 	var user User
-	filter := bson.D{{"token", token}}
+	filter := bson.D{{Key: "token", Value: token}}
 	err := database.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		return "", err
